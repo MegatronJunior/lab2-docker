@@ -57,7 +57,7 @@ PostgreSQL находится во внутренней сети backend.
 
 Создать таблицу и запись:
 
-docker compose exec -T postgres psql -U labuser -d labdb -c "CREATE TABLE IF NOT EXISTS persistence_test (message TEXT NOT NULL); INSERT INTO persistence_test VALUES ('Docker volume works');"
+docker compose exec -T db psql -U labuser -d labdb -c "CREATE TABLE IF NOT EXISTS persistence_test (message TEXT NOT NULL); INSERT INTO persistence_test VALUES ('Docker volume works');"
 
 Пересоздать контейнеры:
 
@@ -66,7 +66,7 @@ docker compose up -d
 
 Проверить сохранность записи:
 
-docker compose exec -T postgres psql -U labuser -d labdb -c "SELECT * FROM persistence_test;"
+docker compose exec -T db psql -U labuser -d labdb -c "SELECT * FROM persistence_test;"
 
 Данные сохраняются в именованном томе pgdata.
 
@@ -78,10 +78,39 @@ docker login
 
 Запустить скрипт:
 
-./build-and-push.sh <dockerhub-user>/lab2-app:1.0
+./build-and-push.sh YOUR_DOCKERHUB_USERNAME/lab2-app:1.0
 
 ## Остановка
 
 docker compose down
 
 Команда не удаляет именованный том с данными.
+
+## Проверка Docker #1 — запуск отдельного контейнера
+
+Собрать образ:
+
+```bash
+docker build -t lab2-app:1.0 .
+```
+
+Запустить приложение без Docker Compose:
+
+```bash
+docker run --rm -d --name lab2-standalone -p 8080:8080 lab2-app:1.0
+```
+
+Проверить HTTP 200:
+
+```bash
+curl -i http://localhost:8080/health
+```
+
+Остановить контейнер:
+
+```bash
+docker stop lab2-standalone
+```
+
+Конфигурация Compose использует актуальную Compose Specification,
+поэтому устаревшее поле version не указывается.
